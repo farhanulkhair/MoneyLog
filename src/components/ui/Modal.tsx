@@ -29,14 +29,14 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center"
       onClick={(e) => {
         if (e.target === overlayRef.current) onClose();
       }}
     >
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-      <div className="relative w-full max-w-lg bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl max-h-[85vh] overflow-hidden animate-slide-up">
-        <div className="flex items-center justify-between p-5 border-b border-gray-100">
+      <div className="relative w-full max-w-lg bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl max-h-[90vh] sm:max-h-[85vh] overflow-hidden animate-slide-up">
+        <div className="flex items-center justify-between p-5 border-b border-gray-100 sticky top-0 bg-white z-10">
           <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
           <button
             onClick={onClose}
@@ -45,7 +45,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
             <X size={20} />
           </button>
         </div>
-        <div className="p-5 overflow-y-auto max-h-[calc(85vh-4rem)]">
+        <div className="p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] overflow-y-auto max-h-[calc(90vh-4rem)] sm:max-h-[calc(85vh-4rem)]">
           {children}
         </div>
       </div>
