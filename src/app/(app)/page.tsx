@@ -14,6 +14,7 @@ import {
   ArrowDownToLine,
   Wallet,
   FileDown,
+  X,
 } from "lucide-react";
 
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -71,6 +72,7 @@ export default function Dashboard() {
   const [showAddExpense, setShowAddExpense] = useState(false);
   const [showAddTransfer, setShowAddTransfer] = useState(false);
   const [editingExpense, setEditingExpense] = useState<ExpenseWithCategory | null>(null);
+  const [fabOpen, setFabOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [insightsLoading, setInsightsLoading] = useState(false);
 
@@ -116,7 +118,6 @@ export default function Dashboard() {
       const sums = calculateCategorySummaries(exps, cats);
       setSummaries(sums);
 
-      // Load insights & budgets in background (non-blocking)
       setInsightsLoading(true);
       Promise.all([
         generateInsights(currentDate, exps, cats),
@@ -209,7 +210,7 @@ export default function Dashboard() {
     <>
       {/* Mobile Header */}
       <header className="md:hidden bg-white border-b border-gray-100 sticky top-0 z-40">
-        <div className="max-w-lg mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-lg mx-auto px-4 py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 bg-indigo-600 rounded-xl flex items-center justify-center">
               <Wallet size={16} className="text-white" />
@@ -225,17 +226,15 @@ export default function Dashboard() {
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleExportPDF}
-              disabled={expenses.length === 0}
-              title="Export PDF"
-            >
-              <FileDown size={16} />
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleExportPDF}
+            disabled={expenses.length === 0}
+            title="Export PDF"
+          >
+            <FileDown size={16} />
+          </Button>
         </div>
       </header>
 
@@ -276,28 +275,7 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <div className="max-w-3xl mx-auto px-4 md:px-6 py-5 space-y-5">
-        {/* Mobile action bar */}
-        <div className="flex gap-2 md:hidden">
-          <Button
-            variant="secondary"
-            size="sm"
-            className="flex-1"
-            onClick={() => setShowAddTransfer(true)}
-          >
-            <ArrowDownToLine size={14} />
-            Transfer
-          </Button>
-          <Button
-            size="sm"
-            className="flex-1"
-            onClick={() => setShowAddExpense(true)}
-          >
-            <Plus size={14} />
-            Catat Pengeluaran
-          </Button>
-        </div>
-
+      <div className="max-w-3xl mx-auto px-4 md:px-6 py-4 space-y-4">
         {/* Period Selector */}
         <Card>
           <PeriodSelector
@@ -319,9 +297,9 @@ export default function Dashboard() {
         <InsightsPanel insights={insights} loading={insightsLoading} />
 
         {/* Desktop: two-column layout */}
-        <div className="grid md:grid-cols-2 gap-5">
+        <div className="grid md:grid-cols-2 gap-4 md:gap-5">
           {/* Donut Chart + Categories */}
-          <div className="space-y-5">
+          <div className="space-y-4 md:space-y-5">
             <Card>
               <CardHeader>
                 <CardTitle>Pengeluaran</CardTitle>
@@ -336,7 +314,7 @@ export default function Dashboard() {
                     summaries={summaries}
                     totalSpending={totalSpending}
                   />
-                  <div className="mt-6">
+                  <div className="mt-5">
                     <CategoryList
                       summaries={summaries}
                       maxTotal={maxCategoryTotal}
@@ -363,7 +341,7 @@ export default function Dashboard() {
                 {expenses.length} transaksi
               </span>
             </CardHeader>
-            <div className="max-h-[600px] overflow-y-auto">
+            <div className="max-h-[600px] overflow-y-auto -mx-1">
               {loading ? (
                 <div className="flex items-center justify-center py-12">
                   <div className="w-8 h-8 border-2 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
@@ -378,6 +356,63 @@ export default function Dashboard() {
             </div>
           </Card>
         </div>
+      </div>
+
+      {/* ─── Mobile FAB ─────────────────────────────────── */}
+      <div className="md:hidden">
+        {/* Backdrop */}
+        {fabOpen && (
+          <div
+            className="fixed inset-0 bg-black/20 z-[55] backdrop-blur-[2px]"
+            onClick={() => setFabOpen(false)}
+          />
+        )}
+
+        {/* FAB menu items */}
+        {fabOpen && (
+          <div className="fixed bottom-24 right-4 z-[56] flex flex-col items-end gap-3 animate-fade-in">
+            <button
+              onClick={() => {
+                setFabOpen(false);
+                setShowAddTransfer(true);
+              }}
+              className="flex items-center gap-2.5 bg-white rounded-2xl shadow-lg shadow-gray-300/40 pl-4 pr-3 py-2.5 border border-gray-100"
+            >
+              <span className="text-sm font-medium text-gray-700">Transfer Masuk</span>
+              <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
+                <ArrowDownToLine size={18} className="text-indigo-600" />
+              </div>
+            </button>
+            <button
+              onClick={() => {
+                setFabOpen(false);
+                setShowAddExpense(true);
+              }}
+              className="flex items-center gap-2.5 bg-white rounded-2xl shadow-lg shadow-gray-300/40 pl-4 pr-3 py-2.5 border border-gray-100"
+            >
+              <span className="text-sm font-medium text-gray-700">Catat Pengeluaran</span>
+              <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
+                <FileDown size={18} className="text-indigo-600" />
+              </div>
+            </button>
+          </div>
+        )}
+
+        {/* FAB button */}
+        <button
+          onClick={() => setFabOpen(!fabOpen)}
+          className={`fixed bottom-20 right-4 z-[56] w-14 h-14 rounded-2xl shadow-lg shadow-indigo-300/50 flex items-center justify-center transition-all duration-200 safe-bottom ${
+            fabOpen
+              ? "bg-gray-800 rotate-45"
+              : "bg-indigo-600 hover:bg-indigo-700 active:scale-95"
+          }`}
+        >
+          {fabOpen ? (
+            <X size={22} className="text-white -rotate-45" />
+          ) : (
+            <Plus size={24} className="text-white" />
+          )}
+        </button>
       </div>
 
       {/* Modals */}

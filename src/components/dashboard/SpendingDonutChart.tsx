@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { PieChart, Pie, Cell } from "recharts";
 import type { CategorySummary } from "@/lib/types";
-import { formatRupiah } from "@/lib/queries";
+import { formatRupiahShort } from "@/lib/queries";
 
 interface SpendingDonutChartProps {
   summaries: CategorySummary[];
@@ -50,17 +50,20 @@ export function SpendingDonutChart({
     chartData.push({ name: "Kosong", value: 1, color: "#e2e8f0" });
   }
 
+  const size = 200;
+  const center = size / 2;
+
   return (
     <div className="relative w-full flex justify-center">
-      <div className="w-56 h-56 relative">
+      <div className="relative" style={{ width: size, height: size }}>
         {mounted && (
-          <PieChart width={224} height={224}>
+          <PieChart width={size} height={size}>
             <Pie
               data={chartData}
-              cx={112}
-              cy={112}
-              innerRadius={68}
-              outerRadius={100}
+              cx={center - 1}
+              cy={center - 1}
+              innerRadius={60}
+              outerRadius={90}
               paddingAngle={summaries.length > 1 ? 3 : 0}
               dataKey="value"
               strokeWidth={0}
@@ -71,11 +74,19 @@ export function SpendingDonutChart({
             </Pie>
           </PieChart>
         )}
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <span className="text-2xl font-bold text-gray-900">
-            {formatRupiah(totalSpending)}
+        <div
+          className="absolute flex flex-col items-center justify-center pointer-events-none"
+          style={{
+            top: 0,
+            left: 0,
+            width: size,
+            height: size,
+          }}
+        >
+          <span className="text-xl font-bold text-gray-900 leading-none">
+            {formatRupiahShort(totalSpending)}
           </span>
-          <span className="text-xs text-gray-400 mt-0.5">Total</span>
+          <span className="text-[11px] text-gray-400 mt-1">Total</span>
         </div>
       </div>
     </div>
