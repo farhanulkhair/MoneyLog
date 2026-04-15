@@ -27,7 +27,7 @@ export function SummaryCards({
 
   return (
     <div className="grid grid-cols-3 gap-2 sm:gap-3">
-      <div className="bg-indigo-600 rounded-2xl p-3 sm:p-4 text-white min-w-0">
+      <div className="rounded-2xl bg-[#136f2b] p-3 sm:p-4 text-white min-w-0 shadow-sm shadow-[#136f2b]/25">
         <div className="flex items-center gap-1 mb-1.5 sm:mb-2">
           <TrendingUp size={12} className="opacity-70 shrink-0" />
           <span className="text-[10px] sm:text-[11px] font-medium opacity-70">Masuk</span>

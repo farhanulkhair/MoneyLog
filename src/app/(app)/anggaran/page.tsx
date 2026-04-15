@@ -87,7 +87,7 @@ export default function AnggaranPage() {
   if (!mounted) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-emerald-200 border-t-primary rounded-full animate-spin" />
       </div>
     );
   }
@@ -150,7 +150,7 @@ export default function AnggaranPage() {
               </div>
               <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all duration-500 ${overallPct > 100 ? "bg-red-500" : overallPct >= 80 ? "bg-amber-500" : "bg-indigo-500"}`}
+                  className={`h-full rounded-full transition-all duration-500 ${overallPct > 100 ? "bg-red-500" : overallPct >= 80 ? "bg-amber-500" : "bg-primary"}`}
                   style={{ width: `${Math.min(overallPct, 100)}%` }}
                 />
               </div>
@@ -162,7 +162,7 @@ export default function AnggaranPage() {
         {/* Budget items */}
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <div className="w-8 h-8 border-2 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-emerald-200 border-t-primary rounded-full animate-spin" />
           </div>
         ) : statuses.length === 0 ? (
           <Card>
@@ -249,7 +249,7 @@ export default function AnggaranPage() {
                   onClick={() => setSelectedCat(cat.id)}
                   className={`flex flex-col items-center gap-1 py-2.5 px-2 rounded-xl border-2 transition-all text-center ${
                     selectedCat === cat.id
-                      ? "border-indigo-500 bg-indigo-50"
+                      ? "border-primary bg-emerald-50"
                       : "border-gray-100 bg-gray-50 hover:border-gray-200"
                   }`}
                 >
@@ -277,7 +277,7 @@ export default function AnggaranPage() {
               onChange={(e) => setBudgetAmount(e.target.value)}
               placeholder="contoh: 200 (= Rp200.000)"
               min={1}
-              className="w-full px-3.5 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-shadow"
+              className="w-full px-3.5 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
               required
             />
           </div>

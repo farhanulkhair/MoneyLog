@@ -88,7 +88,7 @@ function TransactionRow({
         className="flex items-center gap-2.5 py-2.5 px-2 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer"
         onClick={hasActions ? onToggle : undefined}
       >
-        <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-sm shrink-0">
+        <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-sm shrink-0">
           {expense.categories?.icon ?? "📦"}
         </div>
         <div className="flex-1 min-w-0">
@@ -114,7 +114,7 @@ function TransactionRow({
                 onEdit(expense);
                 onToggle();
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-600 text-xs font-medium hover:bg-indigo-100 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-primary text-xs font-medium hover:bg-emerald-100 transition-colors"
             >
               <Pencil size={12} />
               Edit

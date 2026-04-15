@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
+import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -27,7 +28,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#4f46e5",
+  themeColor: "#136f2b",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -42,26 +43,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" className={`${poppins.variable} h-full`}>
-      <body className="min-h-full bg-gray-50 font-sans antialiased">
+      <body className="min-h-full bg-background font-sans antialiased">
         {children}
-        <ServiceWorkerRegistrar />
+        <ServiceWorkerRegister />
       </body>
     </html>
-  );
-}
-
-function ServiceWorkerRegistrar() {
-  return (
-    <script
-      dangerouslySetInnerHTML={{
-        __html: `
-          if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-              navigator.serviceWorker.register('/sw.js').catch(() => {});
-            });
-          }
-        `,
-      }}
-    />
   );
 }

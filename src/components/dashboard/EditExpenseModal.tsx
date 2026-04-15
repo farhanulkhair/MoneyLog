@@ -79,7 +79,7 @@ export function EditExpenseModal({
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full px-3.5 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-shadow"
+            className="w-full px-3.5 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
             required
           />
         </div>
@@ -93,7 +93,7 @@ export function EditExpenseModal({
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             min={1}
-            className="w-full px-3.5 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-shadow"
+            className="w-full px-3.5 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
             required
           />
         </div>
@@ -106,7 +106,7 @@ export function EditExpenseModal({
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="w-full px-3.5 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-shadow"
+            className="w-full px-3.5 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
             required
           />
         </div>
@@ -123,7 +123,7 @@ export function EditExpenseModal({
                 onClick={() => setCategoryId(cat.id)}
                 className={`flex flex-col items-center gap-1 py-2.5 px-2 rounded-xl border-2 transition-all text-center ${
                   categoryId === cat.id
-                    ? "border-indigo-500 bg-indigo-50"
+                    ? "border-primary bg-emerald-50"
                     : "border-gray-100 bg-gray-50 hover:border-gray-200"
                 }`}
               >
@@ -143,7 +143,7 @@ export function EditExpenseModal({
           <select
             value={transferId}
             onChange={(e) => setTransferId(e.target.value)}
-            className="w-full px-3.5 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-shadow"
+            className="w-full px-3.5 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
           >
             <option value="">-- Pilih transfer --</option>
             {transfers.map((t) => (

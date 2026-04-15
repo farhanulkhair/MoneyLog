@@ -2,6 +2,7 @@
 
 import type { CategorySummary } from "@/lib/types";
 import { formatRupiah } from "@/lib/queries";
+import { chartColorForIndex } from "@/lib/chartColors";
 
 interface CategoryListProps {
   summaries: CategorySummary[];
@@ -19,11 +20,12 @@ export function CategoryList({ summaries, maxTotal }: CategoryListProps) {
 
   return (
     <div className="space-y-4">
-      {summaries.map((summary) => (
+      {summaries.map((summary, index) => (
         <CategoryRow
           key={summary.category.id}
           summary={summary}
           maxTotal={maxTotal}
+          barColor={chartColorForIndex(index)}
         />
       ))}
     </div>
@@ -33,23 +35,28 @@ export function CategoryList({ summaries, maxTotal }: CategoryListProps) {
 function CategoryRow({
   summary,
   maxTotal,
+  barColor,
 }: {
   summary: CategorySummary;
   maxTotal: number;
+  barColor: string;
 }) {
   const barWidth = maxTotal > 0 ? (summary.total / maxTotal) * 100 : 0;
 
   return (
     <div className="flex items-center gap-3">
-      <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-lg shrink-0">
+      <div
+        className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 ring-1 ring-black/5"
+        style={{ backgroundColor: `${barColor}18` }}
+      >
         {summary.category.icon}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center justify-between mb-1 gap-2">
           <span className="text-sm font-medium text-gray-900 truncate">
             {summary.category.name}
           </span>
-          <span className="text-sm font-semibold text-gray-900 ml-2">
+          <span className="text-sm font-semibold text-gray-900 shrink-0 tabular-nums">
             {formatRupiah(summary.total)}
           </span>
         </div>
@@ -59,7 +66,7 @@ function CategoryRow({
               className="h-full rounded-full transition-all duration-500"
               style={{
                 width: `${barWidth}%`,
-                backgroundColor: summary.category.color,
+                backgroundColor: barColor,
               }}
             />
           </div>

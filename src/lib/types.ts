@@ -82,4 +82,4 @@ export interface DailySpending {
   total: number;
 }
 
-export type PeriodType = "week" | "month" | "transfer";
+export type PeriodType = "week" | "month" | "custom";

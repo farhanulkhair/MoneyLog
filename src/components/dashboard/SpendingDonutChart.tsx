@@ -4,29 +4,12 @@ import { useEffect, useState } from "react";
 import { PieChart, Pie, Cell } from "recharts";
 import type { CategorySummary } from "@/lib/types";
 import { formatRupiahShort } from "@/lib/queries";
+import { chartColorForIndex } from "@/lib/chartColors";
 
 interface SpendingDonutChartProps {
   summaries: CategorySummary[];
   totalSpending: number;
 }
-
-const CATEGORY_COLORS: Record<string, string> = {
-  Makan: "#6366f1",
-  Jajan: "#8b5cf6",
-  "Cafe/Warkop": "#a78bfa",
-  Laundry: "#c4b5fd",
-  Bensin: "#818cf8",
-  Lainnya: "#4f46e5",
-};
-
-const DEFAULT_COLORS = [
-  "#6366f1",
-  "#8b5cf6",
-  "#a78bfa",
-  "#c4b5fd",
-  "#818cf8",
-  "#4f46e5",
-];
 
 export function SpendingDonutChart({
   summaries,
@@ -41,9 +24,7 @@ export function SpendingDonutChart({
   const chartData = summaries.map((s, i) => ({
     name: s.category.name,
     value: s.total,
-    color:
-      CATEGORY_COLORS[s.category.name] ??
-      DEFAULT_COLORS[i % DEFAULT_COLORS.length],
+    color: chartColorForIndex(i),
   }));
 
   if (chartData.length === 0) {

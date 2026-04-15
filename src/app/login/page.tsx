@@ -68,10 +68,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-[#fff9d6] flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-indigo-200">
+          <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary/30 ring-2 ring-[#FFD300]/50">
             <Wallet size={28} className="text-white" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">MoneyLog</h1>
@@ -84,7 +84,7 @@ export default function LoginPage() {
               type="button"
               onClick={() => { setIsLogin(true); setError(""); setSuccess(""); }}
               className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                isLogin ? "bg-white text-indigo-700 shadow-sm" : "text-gray-500"
+                isLogin ? "bg-white text-primary shadow-sm" : "text-gray-500"
               }`}
             >
               Masuk
@@ -93,7 +93,7 @@ export default function LoginPage() {
               type="button"
               onClick={() => { setIsLogin(false); setError(""); setSuccess(""); }}
               className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                !isLogin ? "bg-white text-indigo-700 shadow-sm" : "text-gray-500"
+                !isLogin ? "bg-white text-primary shadow-sm" : "text-gray-500"
               }`}
             >
               Daftar
@@ -122,7 +122,7 @@ export default function LoginPage() {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Nama kamu"
-                  className="w-full px-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   required
                 />
               </div>
@@ -137,7 +137,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="email@contoh.com"
-                className="w-full px-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 required
               />
             </div>
@@ -153,7 +153,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Minimal 6 karakter"
                   minLength={6}
-                  className="w-full px-4 py-3 pr-11 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-4 py-3 pr-11 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   required
                 />
                 <button
@@ -169,7 +169,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 active:bg-indigo-800 transition-colors disabled:opacity-50 shadow-lg shadow-indigo-200"
+              className="w-full py-3 bg-primary text-white text-sm font-semibold rounded-xl hover:bg-primary-dark active:bg-[#0a4818] transition-colors disabled:opacity-50 shadow-lg shadow-primary/25"
             >
               {loading
                 ? "Memproses..."

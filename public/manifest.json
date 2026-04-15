@@ -4,8 +4,8 @@
   "description": "Aplikasi pencatatan dan rekap keuangan pribadi",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f9fafb",
-  "theme_color": "#4f46e5",
+  "background_color": "#f2f6f2",
+  "theme_color": "#136f2b",
   "orientation": "portrait-primary",
   "scope": "/",
   "icons": [

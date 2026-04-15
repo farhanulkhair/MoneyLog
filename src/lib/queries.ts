@@ -42,7 +42,7 @@ export async function addCategory(category: {
     .insert({
       name: category.name.trim(),
       icon: category.icon || "📦",
-      color: category.color || "#6366f1",
+      color: category.color || "#136f2b",
       user_id: user.id,
       is_default: false,
     })

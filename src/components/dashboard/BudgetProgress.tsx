@@ -14,15 +14,15 @@ export function BudgetProgress({ statuses }: BudgetProgressProps) {
     return (
       <Link
         href="/anggaran"
-        className="flex items-center justify-between px-4 py-3.5 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition-colors"
+        className="flex items-center justify-between px-4 py-3.5 bg-emerald-50 rounded-xl hover:bg-emerald-100 transition-colors"
       >
         <div>
-          <p className="text-sm font-medium text-indigo-700">Atur Anggaran</p>
-          <p className="text-xs text-indigo-500 mt-0.5">
+          <p className="text-sm font-medium text-primary">Atur Anggaran</p>
+          <p className="text-xs text-primary/70 mt-0.5">
             Buat budget per kategori untuk kontrol pengeluaran
           </p>
         </div>
-        <ChevronRight size={16} className="text-indigo-400" />
+        <ChevronRight size={16} className="text-primary/50" />
       </Link>
     );
   }
@@ -70,7 +70,7 @@ export function BudgetProgress({ statuses }: BudgetProgressProps) {
       {statuses.length > 4 && (
         <Link
           href="/anggaran"
-          className="block text-center text-xs text-indigo-600 font-medium hover:underline"
+          className="block text-center text-xs text-primary font-medium hover:underline"
         >
           Lihat semua ({statuses.length}) →
         </Link>

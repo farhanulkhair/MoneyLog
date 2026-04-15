@@ -63,7 +63,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-emerald-200 border-t-primary rounded-full animate-spin" />
       </div>
     );
   }
@@ -78,7 +78,7 @@ export default function ProfilePage() {
       {/* Profile Card */}
       <Card>
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-indigo-200">
+          <div className="w-16 h-16 bg-gradient-to-br from-primary to-[#0a4818] rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-primary/25 ring-2 ring-[#FFD300]/40">
             {user?.fullName?.charAt(0)?.toUpperCase() ?? "U"}
           </div>
           <div className="flex-1 min-w-0">

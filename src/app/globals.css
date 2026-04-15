@@ -1,17 +1,22 @@
 @import "tailwindcss";
 
+/* Brand: green + yellow palette */
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --primary: #6366f1;
-  --primary-light: #818cf8;
-  --primary-dark: #4f46e5;
-  --accent: #8b5cf6;
+  --background: #f2f6f2;
+  --foreground: #0f1f14;
+  --brand-green: #136f2b;
+  --brand-yellow: #ffd300;
+  --brand-lime: #c9e265;
+  --brand-mint: #dee7d9;
+  --primary: #136f2b;
+  --primary-light: #1a8a38;
+  --primary-dark: #0e5a22;
+  --accent: #ffd300;
   --surface: #ffffff;
-  --muted: #64748b;
-  --border: #e2e8f0;
-  --success: #22c55e;
-  --danger: #ef4444;
+  --muted: #4a5d4e;
+  --border: #c5d4c5;
+  --success: #136f2b;
+  --danger: #dc2626;
 }
 
 @theme inline {
@@ -26,6 +31,10 @@
   --color-border: var(--border);
   --color-success: var(--success);
   --color-danger: var(--danger);
+  --color-brand-green: #136f2b;
+  --color-brand-yellow: #ffd300;
+  --color-brand-lime: #c9e265;
+  --color-brand-mint: #dee7d9;
   --font-sans: var(--font-poppins), "Poppins", system-ui, sans-serif;
 }
 
@@ -36,7 +45,7 @@ body {
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
+  scrollbar-color: #a8c4a8 transparent;
 }
 
 .safe-bottom {
@@ -59,8 +68,14 @@ body {
 }
 
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-fade-in {
