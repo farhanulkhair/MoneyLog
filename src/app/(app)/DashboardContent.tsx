@@ -25,6 +25,7 @@ import { EditExpenseModal } from "@/components/dashboard/EditExpenseModal";
 import { InsightsPanel } from "@/components/dashboard/InsightsPanel";
 import { BudgetProgress } from "@/components/dashboard/BudgetProgress";
 import { QuickAddSheet } from "@/components/dashboard/QuickAddSheet";
+import { CategoryExpensesModal } from "@/components/dashboard/CategoryExpensesModal";
 
 import {
   getCategories,
@@ -76,6 +77,8 @@ export function DashboardContent() {
   const [editingExpense, setEditingExpense] = useState<ExpenseWithCategory | null>(null);
   const [loading, setLoading] = useState(true);
   const [insightsLoading, setInsightsLoading] = useState(false);
+  const [categoryDetailSummary, setCategoryDetailSummary] =
+    useState<CategorySummary | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -224,6 +227,13 @@ export function DashboardContent() {
   const maxCategoryTotal =
     summaries.length > 0 ? Math.max(...summaries.map((s) => s.total)) : 0;
 
+  const categoryDetailExpenses = useMemo(() => {
+    if (!categoryDetailSummary) return [];
+    return expenses.filter(
+      (e) => e.category_id === categoryDetailSummary.category.id
+    );
+  }, [expenses, categoryDetailSummary]);
+
   return (
     <>
       {/* Mobile Header */}
@@ -329,10 +339,14 @@ export function DashboardContent() {
                     summaries={summaries}
                     totalSpending={totalSpending}
                   />
-                  <div className="mt-5">
+                  <p className="text-[11px] text-gray-400 mt-4 mb-2 px-0.5">
+                    Ketuk salah satu kategori untuk melihat riwayat transaksi di periode ini.
+                  </p>
+                  <div className="mt-1">
                     <CategoryList
                       summaries={summaries}
                       maxTotal={maxCategoryTotal}
+                      onCategoryClick={setCategoryDetailSummary}
                     />
                   </div>
                 </>
@@ -380,6 +394,20 @@ export function DashboardContent() {
         onClose={() => setShowQuickAdd(false)}
         onPickExpense={() => setShowAddExpense(true)}
         onPickTransfer={() => setShowAddTransfer(true)}
+      />
+
+      <CategoryExpensesModal
+        isOpen={!!categoryDetailSummary}
+        onClose={() => setCategoryDetailSummary(null)}
+        categoryName={categoryDetailSummary?.category.name ?? ""}
+        categoryIcon={categoryDetailSummary?.category.icon ?? "📦"}
+        total={categoryDetailSummary?.total ?? 0}
+        count={categoryDetailSummary?.count ?? 0}
+        expenses={categoryDetailExpenses}
+        onDelete={handleDeleteExpense}
+        onEdit={(expense) => {
+          setEditingExpense(expense);
+        }}
       />
 
       {/* Modals */}

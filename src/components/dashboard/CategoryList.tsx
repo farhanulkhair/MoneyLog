@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronRight } from "lucide-react";
 import type { CategorySummary } from "@/lib/types";
 import { formatRupiah } from "@/lib/queries";
 import { chartColorForIndex } from "@/lib/chartColors";
@@ -7,9 +8,11 @@ import { chartColorForIndex } from "@/lib/chartColors";
 interface CategoryListProps {
   summaries: CategorySummary[];
   maxTotal: number;
+  /** Ketuka baris kategori — membuka detail transaksi (opsional). */
+  onCategoryClick?: (summary: CategorySummary) => void;
 }
 
-export function CategoryList({ summaries, maxTotal }: CategoryListProps) {
+export function CategoryList({ summaries, maxTotal, onCategoryClick }: CategoryListProps) {
   if (summaries.length === 0) {
     return (
       <p className="text-center text-sm text-gray-400 py-6">
@@ -26,6 +29,9 @@ export function CategoryList({ summaries, maxTotal }: CategoryListProps) {
           summary={summary}
           maxTotal={maxTotal}
           barColor={chartColorForIndex(index)}
+          onClick={
+            onCategoryClick ? () => onCategoryClick(summary) : undefined
+          }
         />
       ))}
     </div>
@@ -36,15 +42,17 @@ function CategoryRow({
   summary,
   maxTotal,
   barColor,
+  onClick,
 }: {
   summary: CategorySummary;
   maxTotal: number;
   barColor: string;
+  onClick?: () => void;
 }) {
   const barWidth = maxTotal > 0 ? (summary.total / maxTotal) * 100 : 0;
 
-  return (
-    <div className="flex items-center gap-3">
+  const inner = (
+    <>
       <div
         className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 ring-1 ring-black/5"
         style={{ backgroundColor: `${barColor}18` }}
@@ -75,6 +83,28 @@ function CategoryRow({
           </span>
         </div>
       </div>
-    </div>
+      {onClick && (
+        <ChevronRight
+          size={18}
+          className="text-gray-300 shrink-0"
+          aria-hidden
+        />
+      )}
+    </>
   );
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className="flex items-center gap-3 w-full text-left rounded-xl py-1 -mx-1 px-1 hover:bg-gray-50/80 active:bg-gray-100/80 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        aria-label={`Lihat riwayat ${summary.category.name}`}
+      >
+        {inner}
+      </button>
+    );
+  }
+
+  return <div className="flex items-center gap-3">{inner}</div>;
 }

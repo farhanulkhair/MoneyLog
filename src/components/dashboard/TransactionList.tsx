@@ -13,6 +13,8 @@ interface TransactionListProps {
   onDelete?: (id: string) => void;
   onEdit?: (expense: ExpenseWithCategory) => void;
   showDate?: boolean;
+  /** Saat false, sembunyikan baris nama kategori (mis. di modal filter per kategori). */
+  showCategorySubline?: boolean;
 }
 
 export function TransactionList({
@@ -20,6 +22,7 @@ export function TransactionList({
   onDelete,
   onEdit,
   showDate = true,
+  showCategorySubline = true,
 }: TransactionListProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -53,6 +56,7 @@ export function TransactionList({
                 expense={expense}
                 onDelete={onDelete}
                 onEdit={onEdit}
+                showCategorySubline={showCategorySubline}
                 isActive={activeId === expense.id}
                 onToggle={() =>
                   setActiveId(activeId === expense.id ? null : expense.id)
@@ -70,12 +74,14 @@ function TransactionRow({
   expense,
   onDelete,
   onEdit,
+  showCategorySubline,
   isActive,
   onToggle,
 }: {
   expense: ExpenseWithCategory;
   onDelete?: (id: string) => void;
   onEdit?: (expense: ExpenseWithCategory) => void;
+  showCategorySubline: boolean;
   isActive: boolean;
   onToggle: () => void;
 }) {
@@ -95,9 +101,11 @@ function TransactionRow({
           <p className="text-[13px] font-medium text-gray-800 truncate capitalize">
             {expense.description}
           </p>
-          <p className="text-[10px] text-gray-400 leading-tight">
-            {expense.categories?.name ?? "Lainnya"}
-          </p>
+          {showCategorySubline && (
+            <p className="text-[10px] text-gray-400 leading-tight">
+              {expense.categories?.name ?? "Lainnya"}
+            </p>
+          )}
         </div>
         <span className="text-[13px] font-semibold text-gray-900 tabular-nums shrink-0">
           -{formatRupiahShort(expense.amount)}

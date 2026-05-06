@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { CategoryPersonalization } from "@/components/profil/CategoryPersonalization";
 import {
   LogOut,
   User,
@@ -12,11 +13,15 @@ import {
   Calendar,
   Shield,
   ChevronRight,
+  Sparkles,
 } from "lucide-react";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 
+type ProfileTab = "profil" | "personalisasi";
+
 export default function ProfilePage() {
+  const [tab, setTab] = useState<ProfileTab>("profil");
   const [user, setUser] = useState<{
     email: string;
     fullName: string;
@@ -70,11 +75,43 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-lg mx-auto px-4 py-6 space-y-5">
-      {/* Header */}
-      <div className="md:hidden flex items-center gap-2.5 mb-2">
+      <div className="md:hidden flex items-center gap-2.5 mb-1">
         <h1 className="text-lg font-bold text-gray-900">Profil</h1>
       </div>
 
+      <div className="flex gap-1 p-1 bg-gray-100 rounded-xl" role="tablist" aria-label="Bagian profil">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "profil"}
+          onClick={() => setTab("profil")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium transition-all ${
+            tab === "profil"
+              ? "bg-white text-gray-900 shadow-sm ring-1 ring-black/5"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+        >
+          <User size={16} className="shrink-0 opacity-70" />
+          Akun
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "personalisasi"}
+          onClick={() => setTab("personalisasi")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium transition-all ${
+            tab === "personalisasi"
+              ? "bg-white text-gray-900 shadow-sm ring-1 ring-black/5"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+        >
+          <Sparkles size={16} className="shrink-0 opacity-70" />
+          Personalisasi
+        </button>
+      </div>
+
+      {tab === "profil" ? (
+        <>
       {/* Profile Card */}
       <Card>
         <div className="flex items-center gap-4">
@@ -133,6 +170,10 @@ export default function ProfilePage() {
         <LogOut size={18} />
         {loggingOut ? "Keluar..." : "Keluar dari Akun"}
       </Button>
+        </>
+      ) : (
+        <CategoryPersonalization />
+      )}
     </div>
   );
 }
