@@ -10,17 +10,31 @@ import {
   deleteCategory,
 } from "@/lib/queries";
 import type { Category } from "@/lib/types";
-import { CHART_SEGMENT_COLORS } from "@/lib/chartColors";
 
-const PRESET_ICONS = ["🍜", "☕", "🚗", "🏠", "💊", "🎮", "📱", "🛒", "✈️", "👕", "🎬", "📚", "💳"];
+const DEFAULT_ICON = "📦";
+const DEFAULT_COLOR_HEX = "#136f2b";
+
+function normalizeHex(input: string): string | null {
+  let s = input.trim();
+  if (!s) return null;
+  if (!s.startsWith("#")) s = `#${s}`;
+  if (/^#[0-9A-Fa-f]{6}$/.test(s)) return s.toLowerCase();
+  if (/^#[0-9A-Fa-f]{3}$/.test(s)) {
+    const r = s[1];
+    const g = s[2];
+    const b = s[3];
+    return `#${r}${r}${g}${g}${b}${b}`.toLowerCase();
+  }
+  return null;
+}
 
 export function CategoryPersonalization() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [name, setName] = useState("");
-  const [icon, setIcon] = useState("📦");
-  const [color, setColor] = useState(CHART_SEGMENT_COLORS[0]);
+  const [iconInput, setIconInput] = useState("");
+  const [colorHex, setColorHex] = useState(DEFAULT_COLOR_HEX);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -42,11 +56,14 @@ export function CategoryPersonalization() {
     e.preventDefault();
     const trimmed = name.trim();
     if (!trimmed || saving) return;
+    const icon = iconInput.trim() || DEFAULT_ICON;
+    const color = normalizeHex(colorHex) ?? DEFAULT_COLOR_HEX;
     setSaving(true);
     try {
       await addCategory({ name: trimmed, icon, color });
       setName("");
-      setIcon("📦");
+      setIconInput("");
+      setColorHex(DEFAULT_COLOR_HEX);
       await load();
     } catch (err) {
       console.error(err);
@@ -81,8 +98,6 @@ export function CategoryPersonalization() {
     );
   }
 
-  const palette = CHART_SEGMENT_COLORS.slice(0, 10);
-
   return (
     <div className="space-y-5">
       <Card>
@@ -93,7 +108,7 @@ export function CategoryPersonalization() {
           <div className="min-w-0">
             <h3 className="font-semibold text-gray-900">Kategori pengeluaran</h3>
             <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
-              Tambah kategori sesuai kebiasaanmu (misalnya &quot;Streaming&quot;, &quot;Kampus&quot;).
+              Tambah kategori sesuai kebiasaanmu. Ikon dan warna bisa kamu isi sendiri (kosongkan ikon untuk pakai kotak default).
               Kategori bawaan aplikasi tidak bisa dihapus.
             </p>
           </div>
@@ -116,42 +131,55 @@ export function CategoryPersonalization() {
           </div>
 
           <div>
-            <p className="block text-xs font-medium text-gray-600 mb-1.5">Ikon (ketuk untuk pakai)</p>
-            <div className="flex flex-wrap gap-1.5">
-              {PRESET_ICONS.map((em) => (
-                <button
-                  key={em}
-                  type="button"
-                  onClick={() => setIcon(em)}
-                  className={`h-10 w-10 rounded-xl text-lg flex items-center justify-center border transition-colors ${
-                    icon === em
-                      ? "border-[#136f2b] bg-emerald-50 ring-2 ring-[#136f2b]/25"
-                      : "border-gray-100 bg-gray-50 hover:bg-gray-100"
-                  }`}
-                  aria-label={`Pilih ikon ${em}`}
-                >
-                  {em}
-                </button>
-              ))}
-            </div>
+            <label htmlFor="cat-icon" className="block text-xs font-medium text-gray-600 mb-1.5">
+              Ikon (opsional)
+            </label>
+            <input
+              id="cat-icon"
+              type="text"
+              value={iconInput}
+              onChange={(e) => setIconInput(e.target.value)}
+              placeholder="Ketik emoji atau simbol pendek — kosongkan untuk pakai ikon kotak default"
+              maxLength={32}
+              className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-base leading-normal focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-shadow"
+              autoComplete="off"
+            />
+            <p className="text-[11px] text-gray-400 mt-1">
+              Bisa pakai keyboard emoji di ponsel atau tempel simbol apa pun yang pendek.
+            </p>
           </div>
 
           <div>
-            <p className="block text-xs font-medium text-gray-600 mb-1.5">Warna di grafik</p>
-            <div className="flex flex-wrap gap-2">
-              {palette.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setColor(c)}
-                  className={`h-8 w-8 rounded-full border-2 transition-transform ${
-                    color === c ? "border-gray-900 scale-110" : "border-white shadow-sm"
-                  }`}
-                  style={{ backgroundColor: c }}
-                  aria-label={`Warna ${c}`}
+            <span className="block text-xs font-medium text-gray-600 mb-1.5">
+              Warna di grafik
+            </span>
+            <div className="flex flex-wrap items-center gap-3">
+              <input
+                type="color"
+                value={normalizeHex(colorHex) ?? DEFAULT_COLOR_HEX}
+                onChange={(e) => setColorHex(e.target.value)}
+                className="h-11 w-14 cursor-pointer rounded-xl border border-gray-200 bg-white p-1 shadow-sm"
+                aria-label="Pilih warna"
+              />
+              <div className="flex-1 min-w-[140px]">
+                <label htmlFor="cat-color-hex" className="sr-only">
+                  Kode warna hex
+                </label>
+                <input
+                  id="cat-color-hex"
+                  type="text"
+                  value={colorHex}
+                  onChange={(e) => setColorHex(e.target.value)}
+                  placeholder="#136f2b atau 136f2b"
+                  spellCheck={false}
+                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-mono focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-shadow"
+                  autoComplete="off"
                 />
-              ))}
+              </div>
             </div>
+            <p className="text-[11px] text-gray-400 mt-1">
+              Pakai kotak warna atau ketik kode hex (#RGB atau #RRGGBB). Tidak valid akan diganti hijau default saat menyimpan.
+            </p>
           </div>
 
           <Button type="submit" disabled={saving || !name.trim()} className="w-full sm:w-auto">
