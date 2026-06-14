@@ -38,6 +38,7 @@ import {
   updateExpense,
   generateInsights,
   getBudgetStatuses,
+  getAllTimeExpenseSum,
 } from "@/lib/queries";
 import { generateExpenseReport } from "@/lib/pdf";
 import { createClient } from "@/lib/supabase/client";
@@ -60,6 +61,9 @@ export function DashboardContent() {
   const [insights, setInsights] = useState<SpendingInsight[]>([]);
   const [budgetStatuses, setBudgetStatuses] = useState<BudgetStatus[]>([]);
   const [userName, setUserName] = useState("");
+  const [todayExpense, setTodayExpense] = useState(0);
+  const [allTimeExpense, setAllTimeExpense] = useState(0);
+  const [activeCategoryIndex, setActiveCategoryIndex] = useState<number | null>(null);
 
   const [periodType, setPeriodType] = useState<PeriodType>("month");
   const [currentDate, setCurrentDate] = useState(() => new Date());
@@ -129,17 +133,23 @@ export function DashboardContent() {
 
   const fetchData = useCallback(async () => {
     setLoading(true);
+    setActiveCategoryIndex(null);
     try {
       const range = computeDateRange();
       setDateRange(range);
-      const [cats, trans, exps] = await Promise.all([
+      const todayStr = format(new Date(), "yyyy-MM-dd");
+      const [cats, trans, exps, todayExps, allTimeExpSum] = await Promise.all([
         getCategories(),
         getTransfers(),
         getExpensesByDateRange(range.start, range.end),
+        getExpensesByDateRange(todayStr, todayStr),
+        getAllTimeExpenseSum(),
       ]);
       setCategories(cats);
       setTransfers(trans);
       setExpenses(exps);
+      setTodayExpense(todayExps.reduce((sum, e) => sum + e.amount, 0));
+      setAllTimeExpense(allTimeExpSum);
       const sums = calculateCategorySummaries(exps, cats);
       setSummaries(sums);
 
@@ -224,6 +234,21 @@ export function DashboardContent() {
   };
 
   const totalSpending = expenses.reduce((sum, e) => sum + e.amount, 0);
+  const totalAllTimeTransfers = transfers.reduce((sum, t) => sum + t.amount, 0);
+  const totalBalance = totalAllTimeTransfers - allTimeExpense;
+
+  const nowForIncome = new Date();
+  const startOfThisMonthStr = format(startOfMonth(nowForIncome), "yyyy-MM-dd");
+  const endOfThisMonthStr = format(endOfMonth(nowForIncome), "yyyy-MM-dd");
+
+  const incomeMonth = transfers
+    .filter(
+      (t) =>
+        t.transfer_date >= startOfThisMonthStr &&
+        t.transfer_date <= endOfThisMonthStr
+    )
+    .reduce((sum, t) => sum + t.amount, 0);
+
   const maxCategoryTotal =
     summaries.length > 0 ? Math.max(...summaries.map((s) => s.total)) : 0;
 
@@ -233,6 +258,18 @@ export function DashboardContent() {
       (e) => e.category_id === categoryDetailSummary.category.id
     );
   }, [expenses, categoryDetailSummary]);
+
+  const periodLabel = useMemo(() => {
+    if (periodType === "month") {
+      return format(currentDate, "MMMM yyyy", { locale: localeId });
+    } else if (periodType === "week") {
+      const start = startOfWeek(currentDate, { weekStartsOn: 1 });
+      const end = endOfWeek(currentDate, { weekStartsOn: 1 });
+      return `${format(start, "d MMM", { locale: localeId })} - ${format(end, "d MMM yyyy", { locale: localeId })}`;
+    } else {
+      return `${format(parseISO(customStart), "d MMM", { locale: localeId })} - ${format(parseISO(customEnd), "d MMM yyyy", { locale: localeId })}`;
+    }
+  }, [periodType, currentDate, customStart, customEnd]);
 
   return (
     <>
@@ -316,9 +353,10 @@ export function DashboardContent() {
 
         {/* Summary Cards */}
         <SummaryCards
-          transfers={transfers}
-          expenses={expenses}
-          dateRange={dateRange}
+          totalSpending={totalSpending}
+          incomeMonth={incomeMonth}
+          expenseToday={todayExpense}
+          periodLabel={periodLabel}
         />
 
         {/* Desktop: two-column layout — visualisasi utama */}
@@ -338,6 +376,9 @@ export function DashboardContent() {
                   <SpendingDonutChart
                     summaries={summaries}
                     totalSpending={totalSpending}
+                    activeIndex={activeCategoryIndex}
+                    onActiveIndexChange={setActiveCategoryIndex}
+                    onViewDetails={setCategoryDetailSummary}
                   />
                   <p className="text-[11px] text-gray-400 mt-4 mb-2 px-0.5">
                     Ketuk salah satu kategori untuk melihat riwayat transaksi di periode ini.
@@ -346,6 +387,8 @@ export function DashboardContent() {
                     <CategoryList
                       summaries={summaries}
                       maxTotal={maxCategoryTotal}
+                      activeIndex={activeCategoryIndex}
+                      onActiveIndexChange={setActiveCategoryIndex}
                       onCategoryClick={setCategoryDetailSummary}
                     />
                   </div>

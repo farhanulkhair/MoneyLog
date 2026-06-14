@@ -475,8 +475,13 @@ export async function getBalanceSummary(month: Date) {
     totalIncome,
     totalExpense,
     balance: totalIncome - totalExpense,
-    savingsRate: totalIncome > 0 ? ((totalIncome - totalExpense) / totalIncome) * 100 : 0,
   };
+}
+
+export async function getAllTimeExpenseSum(): Promise<number> {
+  const { data, error } = await supabase.from("expenses").select("amount");
+  if (error) throw error;
+  return data?.reduce((sum, e) => sum + e.amount, 0) ?? 0;
 }
 
 // ─── FORMATTERS ────────────────────────────────────────────────
@@ -490,8 +495,110 @@ export function formatRupiah(amount: number): string {
 }
 
 export function formatRupiahShort(amount: number): string {
-  if (amount >= 1000) {
-    return `${(amount / 1000).toFixed(1)}jt`;
-  }
-  return `${amount}rb`;
+  return new Intl.NumberFormat("id-ID").format(Math.round(amount * 1000));
 }
+
+// ─── DEBTS (Hutang) ────────────────────────────────────────────
+
+export async function getDebtPeople(): Promise<any[]> {
+  const { data, error } = await supabase
+    .from("debt_people")
+    .select("*")
+    .order("name");
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function addDebtPerson(name: string): Promise<any> {
+  const user = await requireUser();
+  const { data, error } = await supabase
+    .from("debt_people")
+    .insert({ name: name.trim(), user_id: user.id })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteDebtPerson(personId: string): Promise<void> {
+  const { error } = await supabase
+    .from("debt_people")
+    .delete()
+    .eq("id", personId);
+  if (error) throw error;
+}
+
+export async function getDebtsByPerson(personId: string): Promise<any[]> {
+  const { data, error } = await supabase
+    .from("debts")
+    .select("*")
+    .eq("person_id", personId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function getDebtsSummary(): Promise<any[]> {
+  const { data, error } = await supabase
+    .from("debts")
+    .select("*, debt_people(*)")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function addDebt(debt: {
+  person_id: string;
+  description: string;
+  amount: number;
+}): Promise<any> {
+  if (debt.amount <= 0) throw new Error("Amount must be positive");
+  if (!debt.description.trim()) throw new Error("Description is required");
+
+  const user = await requireUser();
+  const { data, error } = await supabase
+    .from("debts")
+    .insert({
+      person_id: debt.person_id,
+      description: debt.description.trim(),
+      amount: debt.amount,
+      user_id: user.id,
+      is_paid: false,
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function updateDebtPaidStatus(
+  debtId: string,
+  isPaid: boolean
+): Promise<any> {
+  const { data, error } = await supabase
+    .from("debts")
+    .update({ is_paid: isPaid, updated_at: new Date().toISOString() })
+    .eq("id", debtId)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function payAllDebtsForPerson(personId: string): Promise<void> {
+  const { error } = await supabase
+    .from("debts")
+    .update({ is_paid: true, updated_at: new Date().toISOString() })
+    .eq("person_id", personId)
+    .eq("is_paid", false);
+  if (error) throw error;
+}
+
+export async function deleteDebt(debtId: string): Promise<void> {
+  const { error } = await supabase
+    .from("debts")
+    .delete()
+    .eq("id", debtId);
+  if (error) throw error;
+}
+

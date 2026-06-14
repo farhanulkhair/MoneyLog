@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, User, Wallet } from "lucide-react";
+import { LayoutDashboard, User, Wallet, Receipt, Users } from "lucide-react";
 
 const navItems = [
   { href: "/", label: "Beranda", icon: LayoutDashboard },
+  { href: "/hutang", label: "Hutang", icon: Receipt },
+  { href: "/split-bill", label: "Split Bill", icon: Users },
   { href: "/profil", label: "Profil", icon: User },
 ];
 

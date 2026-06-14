@@ -122,3 +122,102 @@ export function generateExpenseReport({
 
   doc.save(`laporan-pengeluaran-${periodLabel.replace(/\s+/g, "-").toLowerCase()}.pdf`);
 }
+
+export function generateSplitBillPDF({
+  title,
+  subtotal,
+  tax,
+  total,
+  participants,
+}: {
+  title: string;
+  subtotal: number;
+  tax: number;
+  total: number;
+  participants: {
+    name: string;
+    items: string[];
+    subtotal: number;
+    tax: number;
+    total: number;
+  }[];
+}) {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+
+  // Header
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(18);
+  doc.setTextColor(19, 111, 43); // brand green #136f2b
+  doc.text("Rincian Split Bill", pageWidth / 2, 20, { align: "center" });
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(12);
+  doc.setTextColor(80);
+  doc.text(`Acara/Transaksi: ${title}`, pageWidth / 2, 28, { align: "center" });
+
+  doc.setFontSize(9);
+  doc.setTextColor(120);
+  doc.text(
+    `Tanggal Cetak: ${format(new Date(), "d MMMM yyyy, HH:mm", { locale: localeId })}`,
+    pageWidth / 2,
+    34,
+    { align: "center" }
+  );
+  
+  // Overall Summary Box
+  doc.setFillColor(243, 244, 246);
+  doc.roundedRect(14, 42, pageWidth - 28, 24, 3, 3, "F");
+  
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(80);
+  doc.text("Ringkasan Transaksi", 18, 48);
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text(`Subtotal Makanan: Rp ${subtotal.toLocaleString("id-ID")}`, 18, 54);
+  doc.text(`Pajak / PPN: Rp ${tax.toLocaleString("id-ID")}`, 18, 60);
+  
+  doc.setFont("helvetica", "bold");
+  doc.text(`Total Akhir: Rp ${total.toLocaleString("id-ID")}`, pageWidth - 70, 54);
+
+  // Participant Table
+  const tableRows = participants.map((p) => [
+    p.name,
+    p.items.join(", "),
+    `Rp ${p.subtotal.toLocaleString("id-ID")}`,
+    `Rp ${p.tax.toLocaleString("id-ID")}`,
+    `Rp ${p.total.toLocaleString("id-ID")}`,
+  ]);
+
+  tableRows.push([
+    "TOTAL AKHIR",
+    "",
+    `Rp ${subtotal.toLocaleString("id-ID")}`,
+    `Rp ${tax.toLocaleString("id-ID")}`,
+    `Rp ${total.toLocaleString("id-ID")}`,
+  ]);
+
+  autoTable(doc, {
+    startY: 72,
+    head: [["Nama", "Menu Dipesan", "Subtotal", "Porsi Pajak", "Total Akhir"]],
+    body: tableRows,
+    theme: "grid",
+    headStyles: {
+      fillColor: [19, 111, 43], // #136f2b
+      fontSize: 9,
+      fontStyle: "bold",
+    },
+    bodyStyles: { fontSize: 8 },
+    footStyles: { fillColor: [243, 244, 246], fontStyle: "bold" },
+    columnStyles: {
+      2: { halign: "right" },
+      3: { halign: "right" },
+      4: { halign: "right" },
+    },
+  });
+
+  doc.save(`split-bill-${title.toLowerCase().replace(/\s+/g, "-")}.pdf`);
+}
+

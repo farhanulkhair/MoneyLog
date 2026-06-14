@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, User, Plus } from "lucide-react";
+import { LayoutDashboard, User, Plus, Receipt, Users } from "lucide-react";
 
 function openQuickAddFromNav(pathname: string, router: ReturnType<typeof useRouter>) {
   if (pathname === "/") {
@@ -57,14 +57,23 @@ export function BottomNav() {
             aria-hidden
           />
 
-          {/* Tiga kolom: Beranda | FAB tengah | Profil */}
-          <div className="relative z-[2] grid min-w-0 grid-cols-3 items-end px-1 pt-2 pb-2">
+          {/* Lima kolom: Beranda | Hutang | FAB tengah | Split Bill | Profil */}
+          <div className="relative z-[2] grid min-w-0 grid-cols-5 items-end px-1 pt-2 pb-2">
             <div className="flex min-w-0 justify-center">
               <NavIconLink
                 href="/"
                 label="Beranda"
                 Icon={LayoutDashboard}
                 active={pathname === "/"}
+              />
+            </div>
+
+            <div className="flex min-w-0 justify-center">
+              <NavIconLink
+                href="/hutang"
+                label="Hutang"
+                Icon={Receipt}
+                active={pathname.startsWith("/hutang")}
               />
             </div>
 
@@ -85,10 +94,19 @@ export function BottomNav() {
 
             <div className="flex min-w-0 justify-center">
               <NavIconLink
+                href="/split-bill"
+                label="Split Bill"
+                Icon={Users}
+                active={pathname.startsWith("/split-bill")}
+              />
+            </div>
+
+            <div className="flex min-w-0 justify-center">
+              <NavIconLink
                 href="/profil"
                 label="Profil"
                 Icon={User}
-                active={pathname === "/profil"}
+                active={pathname.startsWith("/profil")}
               />
             </div>
           </div>
