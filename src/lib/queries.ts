@@ -602,3 +602,24 @@ export async function deleteDebt(debtId: string): Promise<void> {
   if (error) throw error;
 }
 
+export async function updateDebt(
+  debtId: string,
+  updates: { description?: string; amount?: number }
+): Promise<any> {
+  if (updates.amount !== undefined && updates.amount <= 0)
+    throw new Error("Amount must be positive");
+
+  const clean: Record<string, any> = {};
+  if (updates.description) clean.description = updates.description.trim();
+  if (updates.amount !== undefined) clean.amount = updates.amount;
+  clean.updated_at = new Date().toISOString();
+
+  const { data, error } = await supabase
+    .from("debts")
+    .update(clean)
+    .eq("id", debtId)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}

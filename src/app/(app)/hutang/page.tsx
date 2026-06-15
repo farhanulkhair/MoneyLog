@@ -13,9 +13,10 @@ import {
   X,
   PlusCircle,
   Sparkles,
+  Edit2,
 } from "lucide-react";
 import { format } from "date-fns";
-import { id as localeId } from "date-fns/locale";
+import { id, id as localeId } from "date-fns/locale";
 
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -31,6 +32,7 @@ import {
   payAllDebtsForPerson,
   deleteDebt,
   formatRupiah,
+  updateDebt,
 } from "@/lib/queries";
 
 type TabType = "active" | "completed";
@@ -62,9 +64,10 @@ export default function HutangPage() {
   const [newPersonName, setNewPersonName] = useState("");
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
 
-  // Add Debt state (inside details modal)
+  // Add/Edit Debt state (inside details modal)
   const [debtDesc, setDebtDesc] = useState("");
   const [debtAmount, setDebtAmount] = useState("");
+  const [editingDebt, setEditingDebt] = useState<Debt | null>(null);
   const [submittingDebt, setSubmittingDebt] = useState(false);
   const [submittingPerson, setSubmittingPerson] = useState(false);
 
@@ -157,19 +160,27 @@ export default function HutangPage() {
     }
   };
 
-  const handleAddDebtEntry = async (e: React.FormEvent) => {
+  const handleSaveDebtEntry = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedPerson || !debtDesc.trim() || !debtAmount) return;
     setSubmittingDebt(true);
     try {
-      await addDebt({
-        person_id: selectedPerson.id,
-        description: debtDesc,
-        amount: Number(debtAmount),
-      });
+      if (editingDebt) {
+        await updateDebt(editingDebt.id, {
+          description: debtDesc,
+          amount: Number(debtAmount),
+        });
+        setEditingDebt(null);
+      } else {
+        await addDebt({
+          person_id: selectedPerson.id,
+          description: debtDesc,
+          amount: Number(debtAmount),
+        });
+      }
       setDebtDesc("");
       setDebtAmount("");
-      
+
       // Keep details open but refresh data
       const allPeople = await getDebtPeople();
       setPeople(allPeople);
@@ -256,11 +267,10 @@ export default function HutangPage() {
             role="tab"
             aria-selected={activeTab === "active"}
             onClick={() => setActiveTab("active")}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium transition-all cursor-pointer ${
-              activeTab === "active"
-                ? "bg-white text-gray-900 shadow-sm ring-1 ring-black/5"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium transition-all cursor-pointer ${activeTab === "active"
+              ? "bg-white text-gray-900 shadow-sm ring-1 ring-black/5"
+              : "text-gray-500 hover:text-gray-700"
+              }`}
           >
             <Clock size={16} className="shrink-0 opacity-70" />
             Hutang Aktif
@@ -270,11 +280,10 @@ export default function HutangPage() {
             role="tab"
             aria-selected={activeTab === "completed"}
             onClick={() => setActiveTab("completed")}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium transition-all cursor-pointer ${
-              activeTab === "completed"
-                ? "bg-white text-gray-900 shadow-sm ring-1 ring-black/5"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium transition-all cursor-pointer ${activeTab === "completed"
+              ? "bg-white text-gray-900 shadow-sm ring-1 ring-black/5"
+              : "text-gray-500 hover:text-gray-700"
+              }`}
           >
             <CheckCircle size={16} className="shrink-0 opacity-70" />
             Riwayat Lunas
@@ -310,39 +319,61 @@ export default function HutangPage() {
                   padding={false}
                   className="hover:border-emerald-200 hover:shadow-md hover:shadow-emerald-50/10 transition-all duration-300 overflow-hidden flex flex-col justify-between"
                 >
-                  <button
-                    type="button"
+                  <div
+                    role="button"
+                    tabIndex={0}
                     onClick={() => setSelectedPerson(p)}
-                    className="w-full text-left p-5 flex flex-col justify-between h-full min-h-[120px] focus:outline-none cursor-pointer"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setSelectedPerson(p);
+                      }
+                    }}
+                    className="w-full text-left p-5 flex items-center justify-between min-h-[110px] cursor-pointer focus:outline-none select-none"
                   >
-                    <div>
-                      <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">
-                        Nama Orang
-                      </span>
-                      <h3 className="text-lg font-bold text-gray-900 mt-0.5 truncate">
+                    {/* Kiri: Nama & Jumlah Item Hutang */}
+                    <div className="flex flex-col gap-2 min-w-0 pr-2 h-full justify-between">
+                      <h3 className="text-base md:text-lg font-bold text-gray-900 truncate" title={p.name}>
                         {p.name}
                       </h3>
+                      <div>
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${hasActiveDebts ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-700"
+                          }`}>
+                          {hasActiveDebts ? `${p.activeDebts.length} hutang` : "Lunas"}
+                        </span>
+                      </div>
                     </div>
 
-                    <div className="mt-4 flex items-end justify-between w-full">
-                      <div>
+                    {/* Kanan: Total Hutang & Tombol Lunasi */}
+                    <div className="flex flex-col items-end gap-2.5 shrink-0 text-right">
+                      {activeTab === "active" && hasActiveDebts && (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSettleAll(p.id);
+                          }}
+                          className="flex items-center gap-1 text-xs py-1 px-2.5 h-8 mt-0.5"
+                        >
+                          <Check size={14} />
+                          Lunasi Semua
+                        </Button>
+                      )}
+
+                      <div className="flex flex-col items-end">
                         <span className="text-[9px] uppercase font-bold text-gray-400 tracking-wider">
-                          {activeTab === "active" ? "Hutang Aktif" : "Total Dilunasi"}
+                          {activeTab === "active" ? "Total Hutang" : "Total Lunas"}
                         </span>
-                        <p className={`text-base font-extrabold tabular-nums leading-none mt-1 ${
-                          activeTab === "active" ? (hasActiveDebts ? "text-red-500" : "text-gray-500") : "text-emerald-600"
-                        }`}>
+                        <p className={`text-base md:text-lg font-extrabold tabular-nums leading-none mt-1 ${activeTab === "active"
+                            ? (hasActiveDebts ? "text-red-500" : "text-gray-500")
+                            : "text-emerald-600"
+                          }`}>
                           {formatRupiah(displayAmount)}
                         </p>
                       </div>
-                      
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                        hasActiveDebts ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-700"
-                      }`}>
-                        {hasActiveDebts ? `${p.activeDebts.length} hutang` : "Lunas"}
-                      </span>
                     </div>
-                  </button>
+                  </div>
                 </Card>
               );
             })}
@@ -376,7 +407,12 @@ export default function HutangPage() {
       {/* Modal Detail & Kelola Hutang Orang */}
       <Modal
         isOpen={!!selectedPerson}
-        onClose={() => setSelectedPerson(null)}
+        onClose={() => {
+          setSelectedPerson(null);
+          setEditingDebt(null);
+          setDebtDesc("");
+          setDebtAmount("");
+        }}
         title={selectedPerson?.name ?? "Detail Hutang"}
       >
         {selectedDetails && (
@@ -385,23 +421,12 @@ export default function HutangPage() {
             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
               <div>
                 <p className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">
-                  Total Hutang Aktif
+                  Total Hutang
                 </p>
                 <p className="text-xl font-extrabold text-red-500 tabular-nums">
                   {formatRupiah(selectedDetails.totalActive)}
                 </p>
               </div>
-              
-              {selectedDetails.activeDebts.length > 0 && (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => handleSettleAll(selectedDetails.id)}
-                >
-                  <Check size={14} />
-                  Lunasi Semua
-                </Button>
-              )}
             </div>
 
             {/* List of Debts */}
@@ -419,30 +444,27 @@ export default function HutangPage() {
                   {selectedDetails.debts.map((debt) => (
                     <div
                       key={debt.id}
-                      className={`flex items-center justify-between p-3.5 rounded-xl border transition-all duration-300 ${
-                        debt.is_paid 
-                          ? "bg-emerald-50/20 border-emerald-100/50 opacity-75" 
-                          : "bg-white border-gray-100 shadow-sm"
-                      }`}
+                      className={`flex items-center justify-between p-3.5 rounded-xl border transition-all duration-300 ${debt.is_paid
+                        ? "bg-emerald-50/20 border-emerald-100/50 opacity-75"
+                        : "bg-white border-gray-100 shadow-sm"
+                        }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <button
                           type="button"
                           onClick={() => handleSettleItem(debt.id, debt.is_paid)}
-                          className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors cursor-pointer shrink-0 ${
-                            debt.is_paid 
-                              ? "bg-emerald-500 border-emerald-500 text-white" 
-                              : "border-gray-300 hover:border-emerald-500"
-                          }`}
+                          className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors cursor-pointer shrink-0 ${debt.is_paid
+                            ? "bg-emerald-500 border-emerald-500 text-white"
+                            : "border-gray-300 hover:border-emerald-500"
+                            }`}
                           aria-label={debt.is_paid ? "Tandai belum lunas" : "Tandai sudah lunas"}
                         >
                           {debt.is_paid && <Check size={12} strokeWidth={3} />}
                         </button>
-                        
+
                         <div className="min-w-0">
-                          <p className={`text-sm font-semibold text-gray-900 truncate leading-tight ${
-                            debt.is_paid ? "line-through text-gray-400" : ""
-                          }`}>
+                          <p className={`text-sm font-semibold text-gray-900 truncate leading-tight ${debt.is_paid ? "line-through text-gray-400" : ""
+                            }`}>
                             {debt.description}
                           </p>
                           <p className="text-[10px] text-gray-400 mt-0.5">
@@ -454,16 +476,28 @@ export default function HutangPage() {
                       </div>
 
                       <div className="flex items-center gap-2.5 shrink-0">
-                        <span className={`text-sm font-bold tabular-nums ${
-                          debt.is_paid ? "text-emerald-600 line-through" : "text-red-500"
-                        }`}>
+                        <span className={`text-sm font-bold tabular-nums ${debt.is_paid ? "text-emerald-600 line-through" : "text-red-500"
+                          }`}>
                           {formatRupiah(debt.amount)}
                         </span>
-                        
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingDebt(debt);
+                            setDebtDesc(debt.description);
+                            setDebtAmount(String(debt.amount));
+                          }}
+                          className="p-1 rounded-lg text-primary/50 hover:text-primary hover:bg-primary transition-colors cursor-pointer"
+                          aria-label="Edit catatan"
+                        >
+                          <Edit2 size={13} />
+                        </button>
+
                         <button
                           type="button"
                           onClick={() => handleDeleteDebtEntry(debt.id)}
-                          className="p-1 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
+                          className="p-1 rounded-lg text-red-500 hover:text-red-600transition-colors cursor-pointer"
                           aria-label="Hapus catatan"
                         >
                           <Trash2 size={13} />
@@ -475,13 +509,27 @@ export default function HutangPage() {
               )}
             </div>
 
-            {/* Add new Debt Form */}
-            <form onSubmit={handleAddDebtEntry} className="p-4 bg-gray-50/50 border border-gray-100 rounded-2xl space-y-3">
-              <h4 className="text-xs font-bold text-gray-500 flex items-center gap-1.5">
-                <PlusCircle size={14} className="text-primary" />
-                Tambah Nominal Hutang Baru
-              </h4>
-              
+            {/* Add new Debt Form or Edit Form */}
+            <form onSubmit={handleSaveDebtEntry} className="p-4 bg-gray-50/50 border border-gray-100 rounded-2xl space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold text-gray-500 flex items-center gap-1.5">
+                  {editingDebt ? "Edit Catatan Hutang" : "Tambah Nominal Hutang Baru"}
+                </h4>
+                {editingDebt && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingDebt(null);
+                      setDebtDesc("");
+                      setDebtAmount("");
+                    }}
+                    className="text-[10px] font-semibold text-gray-400 hover:text-red-500 transition-colors"
+                  >
+                    Batal Edit
+                  </button>
+                )}
+              </div>
+
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-[10px] font-medium text-gray-500 mb-1">
@@ -512,7 +560,9 @@ export default function HutangPage() {
                 </div>
               </div>
               <Button type="submit" size="sm" className="w-full" disabled={submittingDebt}>
-                {submittingDebt ? "Menambahkan..." : "Tambah Catatan"}
+                {submittingDebt
+                  ? (editingDebt ? "Menyimpan..." : "Menambahkan...")
+                  : (editingDebt ? "Simpan Perubahan" : "Tambah Catatan")}
               </Button>
             </form>
 
