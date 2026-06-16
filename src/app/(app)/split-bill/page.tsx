@@ -20,6 +20,7 @@ import {
   X,
   History,
   CheckCircle2,
+  Pencil,
 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -75,6 +76,7 @@ export default function SplitBillPage() {
   const [newItemName, setNewItemName] = useState("");
   const [newItemQty, setNewItemQty] = useState(1);
   const [newItemPrice, setNewItemPrice] = useState(""); // total price
+  const [editingMenuId, setEditingMenuId] = useState<string | null>(null);
   
   const [hasTax, setHasTax] = useState(false);
   const [taxMode, setTaxMode] = useState<"percent" | "nominal">("percent");
@@ -85,8 +87,8 @@ export default function SplitBillPage() {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [newPersonName, setNewPersonName] = useState("");
 
-  // Step 4: Assignment (menuId -> list of participantIds)
-  const [assignments, setAssignments] = useState<Record<string, string[]>>({});
+  // Step 4: Assignment (menuId -> Record<participantId, portions/shares>)
+  const [assignments, setAssignments] = useState<Record<string, Record<string, number>>>({});
 
   useEffect(() => {
     setMounted(true);
@@ -110,6 +112,7 @@ export default function SplitBillPage() {
     setNewItemName("");
     setNewItemQty(1);
     setNewItemPrice("");
+    setEditingMenuId(null);
     setHasTax(false);
     setTaxMode("percent");
     setTaxPercent(10);
@@ -132,13 +135,40 @@ export default function SplitBillPage() {
   const handleAddMenu = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newItemName.trim() || !newItemPrice) return;
-    const item: MenuItem = {
-      id: Math.random().toString(36).substring(7),
-      name: newItemName.trim(),
-      qty: Number(newItemQty),
-      totalPrice: Number(newItemPrice),
-    };
-    setMenus((prev) => [...prev, item]);
+
+    if (editingMenuId) {
+      setMenus((prev) =>
+        prev.map((m) =>
+          m.id === editingMenuId
+            ? { ...m, name: newItemName.trim(), qty: Number(newItemQty), totalPrice: Number(newItemPrice) }
+            : m
+        )
+      );
+      setEditingMenuId(null);
+    } else {
+      const item: MenuItem = {
+        id: Math.random().toString(36).substring(7),
+        name: newItemName.trim(),
+        qty: Number(newItemQty),
+        totalPrice: Number(newItemPrice),
+      };
+      setMenus((prev) => [...prev, item]);
+    }
+
+    setNewItemName("");
+    setNewItemQty(1);
+    setNewItemPrice("");
+  };
+
+  const handleStartEdit = (menu: MenuItem) => {
+    setEditingMenuId(menu.id);
+    setNewItemName(menu.name);
+    setNewItemQty(menu.qty);
+    setNewItemPrice(menu.totalPrice.toString());
+  };
+
+  const handleCancelEdit = () => {
+    setEditingMenuId(null);
     setNewItemName("");
     setNewItemQty(1);
     setNewItemPrice("");
@@ -151,6 +181,9 @@ export default function SplitBillPage() {
       delete copy[id];
       return copy;
     });
+    if (editingMenuId === id) {
+      handleCancelEdit();
+    }
   };
 
   // --- Step 3 Handlers ---
@@ -176,22 +209,48 @@ export default function SplitBillPage() {
     setParticipants((prev) => prev.filter((p) => p.id !== id));
     // Remove from assignments
     setAssignments((prev) => {
-      const updated: Record<string, string[]> = {};
-      for (const [menuId, pIds] of Object.entries(prev)) {
-        updated[menuId] = pIds.filter((pId) => pId !== id);
+      const updated: Record<string, Record<string, number>> = {};
+      for (const [menuId, pShares] of Object.entries(prev)) {
+        const copy = { ...pShares };
+        delete copy[id];
+        updated[menuId] = copy;
       }
       return updated;
     });
   };
 
   // --- Step 4 Assignment Helpers ---
-  const toggleAssignment = (menuId: string, participantId: string) => {
+  const incrementShare = (menuId: string, participantId: string) => {
     setAssignments((prev) => {
-      const current = prev[menuId] ?? [];
-      const updated = current.includes(participantId)
-        ? current.filter((id) => id !== participantId)
-        : [...current, participantId];
-      return { ...prev, [menuId]: updated };
+      const current = prev[menuId] ?? {};
+      const updatedShares = (current[participantId] ?? 0) + 1;
+      return {
+        ...prev,
+        [menuId]: {
+          ...current,
+          [participantId]: updatedShares,
+        },
+      };
+    });
+  };
+
+  const decrementShare = (menuId: string, participantId: string) => {
+    setAssignments((prev) => {
+      const current = prev[menuId] ?? {};
+      const currentShares = current[participantId] ?? 0;
+      if (currentShares <= 0) return prev;
+
+      const updated = { ...current };
+      if (currentShares === 1) {
+        delete updated[participantId];
+      } else {
+        updated[participantId] = currentShares - 1;
+      }
+
+      return {
+        ...prev,
+        [menuId]: updated,
+      };
     });
   };
 
@@ -214,14 +273,19 @@ export default function SplitBillPage() {
     let pSubtotal = 0;
 
     menus.forEach((menu) => {
-      const assignedIds = assignments[menu.id] ?? [];
-      if (assignedIds.includes(p.id)) {
-        const sharePrice = menu.totalPrice / assignedIds.length;
-        itemsAssigned.push({
-          name: `${menu.name} (1/${assignedIds.length})`,
-          sharePrice,
-        });
-        pSubtotal += sharePrice;
+      const menuAssignments = assignments[menu.id] ?? {};
+      const personShares = menuAssignments[p.id] ?? 0;
+      if (personShares > 0) {
+        const totalShares = Object.values(menuAssignments).reduce((sum, s) => sum + s, 0);
+        if (totalShares > 0) {
+          const sharePrice = (menu.totalPrice * personShares) / totalShares;
+          const shareText = personShares === totalShares ? menu.name : `${menu.name} (${personShares}/${totalShares} porsi)`;
+          itemsAssigned.push({
+            name: shareText,
+            sharePrice,
+          });
+          pSubtotal += sharePrice;
+        }
       }
     });
 
@@ -239,8 +303,10 @@ export default function SplitBillPage() {
     };
   });
 
-  const sumAssignedSubtotal = results.reduce((sum, r) => sum + r.subtotal, 0);
-  const isAllAssigned = Math.abs(sumAssignedSubtotal - subtotal) < 2; // allowance for float rounding
+  const isAllAssigned = menus.length > 0 && menus.every((menu) => {
+    const totalShares = Object.values(assignments[menu.id] ?? {}).reduce((sum, s) => sum + s, 0);
+    return totalShares > 0;
+  });
 
   // --- Save / Complete Handler ---
   const handleSaveBill = () => {
@@ -484,8 +550,17 @@ export default function SplitBillPage() {
               </h3>
 
               {/* Form item */}
-              <form onSubmit={handleAddMenu} className="p-4 bg-gray-50 border border-gray-100 rounded-2xl space-y-3">
-                <p className="text-xs font-bold text-gray-700">Tambah Item Baru</p>
+              <form onSubmit={handleAddMenu} className={`p-4 rounded-2xl space-y-3 border transition-all ${editingMenuId ? "bg-emerald-50/20 border-primary/45 shadow-sm shadow-primary/5" : "bg-gray-50 border-gray-100"}`}>
+                <p className="text-xs font-bold text-gray-700 flex items-center gap-1.5">
+                  {editingMenuId ? (
+                    <>
+                      <Pencil size={13} className="text-primary animate-pulse" />
+                      <span>Edit Item Menu</span>
+                    </>
+                  ) : (
+                    <span>Tambah Item Baru</span>
+                  )}
+                </p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="sm:col-span-1">
                     <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
@@ -528,10 +603,17 @@ export default function SplitBillPage() {
                     />
                   </div>
                 </div>
-                <Button type="submit" size="sm" className="w-full">
-                  <Plus size={14} />
-                  Tambah ke Daftar
-                </Button>
+                <div className="flex gap-2">
+                  {editingMenuId && (
+                    <Button type="button" variant="ghost" size="sm" onClick={handleCancelEdit} className="w-1/3">
+                      Batal
+                    </Button>
+                  )}
+                  <Button type="submit" size="sm" className={editingMenuId ? "w-2/3" : "w-full"}>
+                    {editingMenuId ? <Check size={14} /> : <Plus size={14} />}
+                    {editingMenuId ? "Simpan Perubahan" : "Tambah ke Daftar"}
+                  </Button>
+                </div>
               </form>
 
               {/* List items added */}
@@ -543,26 +625,43 @@ export default function SplitBillPage() {
                   </p>
                 ) : (
                   <div className="space-y-2">
-                    {menus.map((m) => (
-                      <div key={m.id} className="flex items-center justify-between p-3.5 bg-white border border-gray-100 rounded-xl shadow-sm">
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-gray-800 truncate">{m.name}</p>
-                          <p className="text-xs text-gray-400 mt-0.5">{m.qty} porsi</p>
+                    {menus.map((m) => {
+                      const isEditingThis = editingMenuId === m.id;
+                      return (
+                        <div key={m.id} className={`flex items-center justify-between p-3.5 rounded-xl border transition-all ${isEditingThis ? "bg-emerald-50/40 border-primary/60 shadow-sm" : "bg-white border-gray-100 shadow-sm"}`}>
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-gray-800 truncate flex items-center gap-1.5">
+                              {isEditingThis && <Pencil size={12} className="text-primary animate-pulse shrink-0" />}
+                              <span>{m.name}</span>
+                            </p>
+                            <p className="text-xs text-gray-400 mt-0.5">{m.qty} porsi</p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-sm font-bold text-gray-900 tabular-nums">
+                              Rp {m.totalPrice.toLocaleString("id-ID")}
+                            </span>
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => handleStartEdit(m)}
+                                className={`p-1 rounded-lg transition-colors cursor-pointer ${isEditingThis ? "text-primary hover:bg-emerald-100" : "text-gray-300 hover:text-primary hover:bg-emerald-50"}`}
+                                title="Edit menu"
+                              >
+                                <Pencil size={14} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteMenu(m.id)}
+                                className="p-1 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
+                                title="Hapus menu"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm font-bold text-gray-900 tabular-nums">
-                            Rp {m.totalPrice.toLocaleString("id-ID")}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteMenu(m.id)}
-                            className="p-1 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -734,17 +833,19 @@ export default function SplitBillPage() {
               
               <div className="p-3.5 bg-emerald-50 text-[11px] text-emerald-800 rounded-2xl border border-emerald-100 flex gap-2">
                 <Info size={16} className="shrink-0 text-primary mt-0.5" />
-                <span>Ketuk nama orang pada setiap menu yang ikut memakannya. Tagihan menu tersebut akan dibagi rata secara otomatis.</span>
+                <span>Hubungkan orang dengan porsi menu yang dipesan. Tekan nama untuk menambahkan porsi (+1), atau gunakan tombol +/- untuk mengatur porsi. Tagihan menu akan dibagi secara proporsional.</span>
               </div>
 
               {/* Menu-centric mapping */}
               <div className="space-y-4 max-h-[350px] overflow-y-auto pr-1">
                 {menus.map((menu) => {
-                  const assignedPeople = assignments[menu.id] ?? [];
+                  const menuAssignments = assignments[menu.id] ?? {};
+                  const assignedPeopleCount = Object.values(menuAssignments).filter((shares) => shares > 0).length;
+                  const totalAssignedShares = Object.values(menuAssignments).reduce((sum, s) => sum + s, 0);
                   
                   return (
                     <div key={menu.id} className="p-4 bg-white border border-gray-100 rounded-2xl shadow-sm space-y-3.5">
-                      <div className="flex justify-between items-start">
+                      <div className="flex justify-between items-start gap-2">
                         <div>
                           <h4 className="text-sm font-bold text-gray-900">{menu.name}</h4>
                           <span className="text-[10px] text-gray-400 mt-0.5 block">
@@ -752,35 +853,65 @@ export default function SplitBillPage() {
                           </span>
                         </div>
                         
-                        <span className="text-xs bg-gray-100 px-2 py-0.5 rounded text-gray-600 font-semibold">
-                          {assignedPeople.length === 0 
+                        <span className="text-[10px] bg-gray-100 px-2 py-0.5 rounded text-gray-600 font-semibold shrink-0">
+                          {assignedPeopleCount === 0 
                             ? "Belum ada yang makan" 
-                            : `${assignedPeople.length} orang patungan`}
+                            : `${assignedPeopleCount} orang patungan (${totalAssignedShares} porsi)`}
                         </span>
                       </div>
 
                       {/* Participant choice list */}
                       <div className="flex flex-wrap gap-1.5">
                         {participants.map((person) => {
-                          const isSelected = assignedPeople.includes(person.id);
+                          const shares = menuAssignments[person.id] ?? 0;
+                          const isSelected = shares > 0;
                           
-                          return (
+                          return isSelected ? (
+                            <div
+                              key={person.id}
+                              className="flex items-center gap-1.5 py-1 px-2 rounded-xl border bg-emerald-50 border-primary/50 text-primary shadow-sm transition-all"
+                            >
+                              <button
+                                type="button"
+                                onClick={() => decrementShare(menu.id, person.id)}
+                                className="w-5 h-5 flex items-center justify-center rounded-lg bg-white border border-emerald-200 hover:bg-emerald-100 active:scale-90 text-primary font-extrabold transition-all cursor-pointer select-none text-[13px] leading-none"
+                              >
+                                -
+                              </button>
+                              <span className="text-xs font-extrabold min-w-[12px] text-center tabular-nums">
+                                {shares}
+                              </span>
+                              <span className="text-xs font-semibold">{person.name}</span>
+                              <button
+                                type="button"
+                                onClick={() => incrementShare(menu.id, person.id)}
+                                className="w-5 h-5 flex items-center justify-center rounded-lg bg-white border border-emerald-200 hover:bg-emerald-100 active:scale-90 text-primary font-extrabold transition-all cursor-pointer select-none text-[13px] leading-none"
+                              >
+                                +
+                              </button>
+                            </div>
+                          ) : (
                             <button
                               key={person.id}
                               type="button"
-                              onClick={() => toggleAssignment(menu.id, person.id)}
-                              className={`py-1.5 px-3 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
-                                isSelected
-                                  ? "bg-emerald-50 border-primary text-primary shadow-sm"
-                                  : "bg-gray-50 border-gray-100 text-gray-600 hover:border-gray-200"
-                              }`}
+                              onClick={() => incrementShare(menu.id, person.id)}
+                              className="py-1.5 px-3 rounded-xl text-xs font-semibold border bg-gray-50 border-gray-100 text-gray-500 hover:border-gray-200 hover:text-gray-700 transition-all cursor-pointer"
                             >
-                              {person.name}
-                              {isSelected && <span className="ml-1 text-[10px] font-bold">✔</span>}
+                              {person.name} <span className="text-gray-300 font-normal text-[10px] ml-0.5">+</span>
                             </button>
                           );
                         })}
                       </div>
+
+                      {/* Warning inside item card if portion total does not match quantity */}
+                      {totalAssignedShares > 0 && totalAssignedShares !== menu.qty && (
+                        <div className="text-[10px] text-amber-600 bg-amber-50/65 px-2.5 py-1.5 rounded-xl border border-amber-100/50 flex items-center gap-1.5 animate-fade-in">
+                          <Info size={13} className="shrink-0 text-amber-500" />
+                          <span>
+                            Porsi dibagikan ({totalAssignedShares}) berbeda dengan porsi dibeli ({menu.qty}). Harga tetap dibagi secara proporsional.
+                          </span>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
