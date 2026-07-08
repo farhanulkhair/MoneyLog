@@ -26,15 +26,15 @@ function NavIconLink({
   return (
     <Link
       href={href}
-      className="flex flex-col items-center justify-end gap-1 py-2 min-h-[52px] text-white/85 hover:text-white transition-colors"
+      className="flex flex-col items-center justify-end gap-1 py-2 min-h-[52px] text-white/85 hover:text-white transition-all duration-200 cursor-pointer"
     >
       <span className="relative flex flex-col items-center">
-        <Icon size={22} strokeWidth={active ? 2.5 : 2} className={active ? "text-[#FFD300]" : ""} />
+        <Icon size={22} strokeWidth={active ? 2.5 : 2} className={`transition-colors duration-200 ${active ? "text-[#FFD300]" : ""}`} />
         {active && (
-          <span className="absolute -bottom-1.5 h-1 w-1 rounded-full bg-[#FFD300]" aria-hidden />
+          <span className="absolute -bottom-1.5 h-1 w-1 rounded-full bg-[#FFD300] animate-scale-in" aria-hidden />
         )}
       </span>
-      <span className="text-[9px] font-medium leading-none text-white/70">{label}</span>
+      <span className={`text-[9px] font-medium leading-none transition-colors duration-200 ${active ? "text-[#FFD300]/90" : "text-white/70"}`}>{label}</span>
     </Link>
   );
 }

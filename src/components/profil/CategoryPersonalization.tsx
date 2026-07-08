@@ -10,6 +10,7 @@ import {
   deleteCategory,
 } from "@/lib/queries";
 import type { Category } from "@/lib/types";
+import { CategoryListSkeleton } from "@/components/ui/Skeleton";
 
 const DEFAULT_ICON = "📦";
 const DEFAULT_COLOR_HEX = "#136f2b";
@@ -91,11 +92,7 @@ export function CategoryPersonalization() {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center py-16">
-        <div className="w-8 h-8 border-2 border-emerald-200 border-t-primary rounded-full animate-spin" />
-      </div>
-    );
+    return <CategoryListSkeleton />;
   }
 
   return (

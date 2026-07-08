@@ -26,6 +26,7 @@ import { InsightsPanel } from "@/components/dashboard/InsightsPanel";
 import { BudgetProgress } from "@/components/dashboard/BudgetProgress";
 import { QuickAddSheet } from "@/components/dashboard/QuickAddSheet";
 import { CategoryExpensesModal } from "@/components/dashboard/CategoryExpensesModal";
+import { DashboardChartSkeleton, DashboardTransactionSkeleton } from "@/components/ui/Skeleton";
 
 import {
   getCategories,
@@ -368,9 +369,7 @@ export function DashboardContent() {
                 <CardTitle>Pengeluaran</CardTitle>
               </CardHeader>
               {loading ? (
-                <div className="flex items-center justify-center py-16">
-                  <div className="w-8 h-8 border-2 border-emerald-200 border-t-primary rounded-full animate-spin" />
-                </div>
+                <DashboardChartSkeleton />
               ) : (
                 <>
                   <SpendingDonutChart
@@ -417,9 +416,7 @@ export function DashboardContent() {
             </CardHeader>
             <div className="max-h-[600px] overflow-y-auto -mx-1">
               {loading ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="w-8 h-8 border-2 border-emerald-200 border-t-primary rounded-full animate-spin" />
-                </div>
+                <DashboardTransactionSkeleton />
               ) : (
                 <TransactionList
                   expenses={expenses}

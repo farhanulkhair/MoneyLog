@@ -26,6 +26,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { SplitBillSkeleton } from "@/components/ui/Skeleton";
 import { generateSplitBillPDF } from "@/lib/pdf";
 
 interface MenuItem {
@@ -125,8 +126,8 @@ export default function SplitBillPage() {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-emerald-200 border-t-primary rounded-full animate-spin" />
+      <div className="max-w-3xl mx-auto px-4 md:px-6 py-5">
+        <SplitBillSkeleton />
       </div>
     );
   }

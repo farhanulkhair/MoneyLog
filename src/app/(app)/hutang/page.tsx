@@ -22,6 +22,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { HutangSkeleton } from "@/components/ui/Skeleton";
 import {
   getDebtPeople,
   addDebtPerson,
@@ -236,8 +237,8 @@ export default function HutangPage() {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-emerald-200 border-t-primary rounded-full animate-spin" />
+      <div className="max-w-3xl mx-auto px-4 md:px-6 py-5">
+        <HutangSkeleton />
       </div>
     );
   }
@@ -292,9 +293,7 @@ export default function HutangPage() {
 
         {/* Content list */}
         {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="w-8 h-8 border-2 border-emerald-200 border-t-primary rounded-full animate-spin" />
-          </div>
+          <HutangSkeleton />
         ) : displayedPeople.length === 0 ? (
           <Card>
             <EmptyState

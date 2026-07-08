@@ -15,6 +15,7 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { AnggaranSkeleton } from "@/components/ui/Skeleton";
 import { formatRupiah, getCategories, getBudgetStatuses, upsertBudget, deleteBudget } from "@/lib/queries";
 import type { Category, BudgetStatus } from "@/lib/types";
 
@@ -86,8 +87,8 @@ export default function AnggaranPage() {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-emerald-200 border-t-primary rounded-full animate-spin" />
+      <div className="max-w-3xl mx-auto px-4 md:px-6 py-5">
+        <AnggaranSkeleton />
       </div>
     );
   }
@@ -161,9 +162,7 @@ export default function AnggaranPage() {
 
         {/* Budget items */}
         {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="w-8 h-8 border-2 border-emerald-200 border-t-primary rounded-full animate-spin" />
-          </div>
+          <AnggaranSkeleton />
         ) : statuses.length === 0 ? (
           <Card>
             <EmptyState

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { Wallet, Eye, EyeOff } from "lucide-react";
+import { Wallet, Eye, EyeOff, Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -78,7 +78,7 @@ export default function LoginPage() {
           <p className="text-sm text-gray-500 mt-1">Pencatatan keuangan pribadi</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 p-6">
+        <div className="bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 p-6 animate-fade-in">
           <div className="flex gap-1 bg-gray-100 rounded-xl p-1 mb-6">
             <button
               type="button"
@@ -171,11 +171,16 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full py-3 bg-primary text-white text-sm font-semibold rounded-xl hover:bg-primary-dark active:bg-[#0a4818] transition-colors disabled:opacity-50 shadow-lg shadow-primary/25"
             >
-              {loading
-                ? "Memproses..."
-                : isLogin
-                  ? "Masuk"
-                  : "Buat Akun"}
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 size={16} className="animate-spin" />
+                  Memproses...
+                </span>
+              ) : isLogin ? (
+                "Masuk"
+              ) : (
+                "Buat Akun"
+              )}
             </button>
           </form>
 
@@ -200,7 +205,14 @@ export default function LoginPage() {
               <path d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
               <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
             </svg>
-            {googleLoading ? "Menghubungkan..." : "Lanjutkan dengan Google"}
+            {googleLoading ? (
+              <span className="flex items-center gap-2">
+                <Loader2 size={16} className="animate-spin" />
+                Menghubungkan...
+              </span>
+            ) : (
+              "Lanjutkan dengan Google"
+            )}
           </button>
         </div>
 

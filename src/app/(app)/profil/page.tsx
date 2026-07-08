@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { CategoryPersonalization } from "@/components/profil/CategoryPersonalization";
+import { ProfileSkeleton } from "@/components/ui/Skeleton";
 import {
   LogOut,
   User,
@@ -113,11 +114,7 @@ export default function ProfilePage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-emerald-200 border-t-primary rounded-full animate-spin" />
-      </div>
-    );
+    return <ProfileSkeleton />;
   }
 
   return (
