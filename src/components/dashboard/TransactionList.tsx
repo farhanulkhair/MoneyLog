@@ -39,17 +39,17 @@ export function TransactionList({
   const grouped = groupByDate(expenses);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 w-full min-w-0">
       {Object.entries(grouped).map(([date, items]) => (
-        <div key={date}>
+        <div key={date} className="min-w-0">
           {showDate && (
-            <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mb-2">
+            <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mb-2 truncate">
               {format(new Date(date), "EEE, d MMM yyyy", {
                 locale: localeId,
               })}
             </p>
           )}
-          <div className="space-y-0.5">
+          <div className="space-y-0.5 min-w-0">
             {items.map((expense) => (
               <TransactionRow
                 key={expense.id}
@@ -88,33 +88,39 @@ function TransactionRow({
   const hasActions = onEdit || onDelete;
 
   return (
-    <div className="relative overflow-hidden rounded-xl">
+    <div className="relative overflow-hidden rounded-xl w-full min-w-0">
       {/* Main row */}
       <div
-        className="flex items-center gap-2.5 py-2.5 px-2 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer"
+        className="flex items-center gap-2.5 py-2.5 px-2 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer w-full min-w-0"
         onClick={hasActions ? onToggle : undefined}
       >
         <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-sm shrink-0">
-          {expense.categories?.icon ?? "📦"}
+          {expense.categories?.icon ?? "💰"}
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-medium text-gray-800 truncate capitalize">
+        <div className="flex-1 min-w-0 overflow-hidden">
+          <p
+            className="text-[13px] font-medium text-gray-800 truncate capitalize"
+            title={expense.description}
+          >
             {expense.description}
           </p>
           {showCategorySubline && (
-            <p className="text-[10px] text-gray-400 leading-tight">
+            <p
+              className="text-[10px] text-gray-400 leading-tight truncate"
+              title={expense.categories?.name ?? "Lainnya"}
+            >
               {expense.categories?.name ?? "Lainnya"}
             </p>
           )}
         </div>
-        <span className="text-[13px] font-semibold text-gray-900 tabular-nums shrink-0">
+        <span className="text-[13px] font-semibold text-gray-900 tabular-nums shrink-0 ml-2">
           -{formatRupiahShort(expense.amount)}
         </span>
       </div>
 
       {/* Action bar — visible on tap (mobile) */}
       {isActive && hasActions && (
-        <div className="flex items-center gap-1.5 px-2 pb-2 animate-fade-in">
+        <div className="flex items-center gap-1.5 px-2 pb-2 animate-fade-in w-full min-w-0 flex-wrap sm:flex-nowrap">
           {onEdit && (
             <button
               onClick={(e) => {
@@ -122,7 +128,7 @@ function TransactionRow({
                 onEdit(expense);
                 onToggle();
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-primary text-xs font-medium hover:bg-emerald-100 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-primary text-xs font-medium hover:bg-emerald-100 transition-colors cursor-pointer"
             >
               <Pencil size={12} />
               Edit
@@ -134,7 +140,7 @@ function TransactionRow({
                 e.stopPropagation();
                 onDelete(expense.id);
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-600 text-xs font-medium hover:bg-red-100 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-600 text-xs font-medium hover:bg-red-100 transition-colors cursor-pointer"
             >
               <Trash2 size={12} />
               Hapus
@@ -145,7 +151,7 @@ function TransactionRow({
               e.stopPropagation();
               onToggle();
             }}
-            className="ml-auto p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors"
+            className="ml-auto p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors cursor-pointer"
           >
             <X size={14} />
           </button>

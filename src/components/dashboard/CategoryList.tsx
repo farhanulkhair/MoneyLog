@@ -29,7 +29,7 @@ export function CategoryList({
   }
 
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-2.5 w-full min-w-0">
       {summaries.map((summary, index) => {
         const isActive = activeIndex === index;
         const isAnyActive = activeIndex !== null;
@@ -101,7 +101,7 @@ function CategoryRow({
         }
       }}
       style={rowStyle}
-      className={`flex items-center gap-3 w-full text-left rounded-xl p-2 border border-transparent transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 cursor-pointer ${
+      className={`flex items-center gap-3 w-full min-w-0 text-left rounded-xl p-2 border border-transparent transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 cursor-pointer ${
         isAnyActive && !isActive ? "opacity-55 hover:opacity-90" : "opacity-100"
       } ${isActive ? "shadow-sm shadow-black/[0.02]" : "hover:bg-gray-50/50"}`}
       aria-label={`Pilih kategori ${summary.category.name}`}
@@ -117,17 +117,17 @@ function CategoryRow({
       </div>
       
       <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between mb-1 gap-2">
-          <span className="text-sm font-semibold text-gray-900 truncate">
+        <div className="flex items-center justify-between mb-1 gap-2 min-w-0">
+          <span className="text-sm font-semibold text-gray-900 truncate" title={summary.category.name}>
             {summary.category.name}
           </span>
-          <span className="text-sm font-bold text-gray-900 shrink-0 tabular-nums">
+          <span className="text-sm font-bold text-gray-900 shrink-0 tabular-nums ml-2">
             {formatRupiah(summary.total)}
           </span>
         </div>
         
-        <div className="flex items-center gap-2">
-          <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden min-w-0">
             <div
               className="h-full rounded-full transition-all duration-500"
               style={{

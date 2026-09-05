@@ -9,7 +9,7 @@ interface CardProps {
 export function Card({ children, className = "", padding = true }: CardProps) {
   return (
     <div
-      className={`rounded-2xl bg-white shadow-sm border border-gray-100 ${padding ? "p-5" : ""} ${className}`}
+      className={`rounded-2xl bg-white shadow-sm border border-gray-100 min-w-0 ${padding ? "p-5" : ""} ${className}`}
     >
       {children}
     </div>
@@ -24,7 +24,7 @@ export function CardHeader({
   className?: string;
 }) {
   return (
-    <div className={`flex items-center justify-between mb-4 ${className}`}>
+    <div className={`flex items-center justify-between mb-4 min-w-0 gap-2 ${className}`}>
       {children}
     </div>
   );
@@ -38,7 +38,7 @@ export function CardTitle({
   className?: string;
 }) {
   return (
-    <h3 className={`text-base font-semibold text-gray-900 ${className}`}>
+    <h3 className={`text-base font-semibold text-gray-900 truncate min-w-0 ${className}`}>
       {children}
     </h3>
   );

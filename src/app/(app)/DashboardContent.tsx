@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
 import {
@@ -222,7 +222,7 @@ export function DashboardContent() {
     } else if (periodType === "week") {
       periodLabel = `${format(startOfWeek(currentDate, { weekStartsOn: 1 }), "d MMM", { locale: localeId })} - ${format(endOfWeek(currentDate, { weekStartsOn: 1 }), "d MMM yyyy", { locale: localeId })}`;
     } else {
-      periodLabel = `${format(parseISO(customStart), "d MMM yyyy", { locale: localeId })} – ${format(parseISO(customEnd), "d MMM yyyy", { locale: localeId })}`;
+      periodLabel = `${format(parseISO(customStart), "d MMM yyyy", { locale: localeId })} â€“ ${format(parseISO(customEnd), "d MMM yyyy", { locale: localeId })}`;
     }
 
     generateExpenseReport({
@@ -360,10 +360,10 @@ export function DashboardContent() {
           periodLabel={periodLabel}
         />
 
-        {/* Desktop: two-column layout — visualisasi utama */}
-        <div className="grid md:grid-cols-2 gap-4 md:gap-5">
+        {/* Desktop: two-column layout â€” visualisasi utama */}
+        <div className="grid md:grid-cols-2 gap-4 md:gap-5 min-w-0">
           {/* Donut Chart + Categories */}
-          <div className="space-y-4 md:space-y-5">
+          <div className="space-y-4 md:space-y-5 min-w-0">
             <Card>
               <CardHeader>
                 <CardTitle>Pengeluaran</CardTitle>
@@ -414,7 +414,7 @@ export function DashboardContent() {
                 {expenses.length} transaksi
               </span>
             </CardHeader>
-            <div className="max-h-[600px] overflow-y-auto -mx-1">
+            <div className="max-h-[600px] overflow-y-auto overflow-x-hidden px-0.5">
               {loading ? (
                 <DashboardTransactionSkeleton />
               ) : (
@@ -440,7 +440,7 @@ export function DashboardContent() {
         isOpen={!!categoryDetailSummary}
         onClose={() => setCategoryDetailSummary(null)}
         categoryName={categoryDetailSummary?.category.name ?? ""}
-        categoryIcon={categoryDetailSummary?.category.icon ?? "📦"}
+        categoryIcon={categoryDetailSummary?.category.icon ?? "ðŸ“¦"}
         total={categoryDetailSummary?.total ?? 0}
         count={categoryDetailSummary?.count ?? 0}
         expenses={categoryDetailExpenses}
